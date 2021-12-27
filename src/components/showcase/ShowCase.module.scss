@@ -24,8 +24,18 @@
       height: 100%;
       margin-right: 24px;
 
+      hr {
+        margin-top: 24px;
+        margin-bottom: 24px;
+      }
+
       .spacer {
         height: 12px;
+      }
+
+      .sort {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.075);
       }
     }
 
@@ -41,7 +51,7 @@
   padding: 4px;
   min-height: 32px;
   border: 1px solid white;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.075);
 }
 :global(.ui-reorderable-item) {
   font-size: 1.5em;

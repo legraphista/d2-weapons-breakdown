@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {observer} from "mobx-react";
 import {BungieData, BungieDataClass, WeaponBreakdownList} from "../../helpers/data/BungieData";
-import {Alert, AlertTitle, Paper, Typography} from "@mui/material";
+import {Alert, AlertTitle, MenuItem, Paper, Select, Typography} from "@mui/material";
 import classes from './ShowCase.module.scss';
 import {destinyData} from "../../helpers/data/data-frames/BungieDataFrames";
 import {DestinyItemSubType} from "bungie-api-ts/destiny2";
@@ -25,6 +25,7 @@ const breakdownNames: ({ [s in WeaponBreakdownList['dim']]: string }) = {
 const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) = {
   inventoryBucketHash: {
     dim: "inventoryBucketHash",
+    name: dimValue => BungieData.destiny?.DestinyInventoryBucketDefinition[dimValue].displayProperties.name || 'inventoryBucketHash',
     title: (dimValue, subset) => <CollapsibleTitle
       displayProperties={BungieData.destiny?.DestinyInventoryBucketDefinition[dimValue].displayProperties}
       items={subset}
@@ -32,6 +33,7 @@ const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) =
   },
   damageTypeHash: {
     dim: "damageTypeHash",
+    name: dimValue => BungieData.destiny?.DestinyDamageTypeDefinition[dimValue].displayProperties.name || 'damageTypeHash',
     title: (dimValue, subset) => <CollapsibleTitle
       displayProperties={BungieData.destiny?.DestinyDamageTypeDefinition[dimValue].displayProperties}
       items={subset}
@@ -39,6 +41,7 @@ const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) =
   },
   itemSubType: {
     dim: "itemSubType",
+    name: (dimValue:DestinyItemSubType) => destinyData.weaponSubTypes?.[dimValue]?.displayProperties.name ?? 'itemSubType',
     title: (dimValue: DestinyItemSubType, subset) => <CollapsibleTitle
       displayProperties={destinyData.weaponSubTypes?.[dimValue]?.displayProperties}
       items={subset}
@@ -46,6 +49,7 @@ const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) =
   },
   intrinsicsHash: {
     dim: "intrinsicsHash",
+    name: dimValue => BungieData.destiny?.DestinyInventoryItemDefinition[dimValue].displayProperties.name || 'intrinsicsHash',
     title: (dimValue, subset) => <CollapsibleTitle
       displayProperties={BungieData.destiny?.DestinyInventoryItemDefinition[dimValue].displayProperties}
       items={subset}
@@ -74,6 +78,8 @@ export const ShowCase = observer(function ShowCase() {
     ]
   ]);
 
+  const [sortBy, setSortBy]  =useState<'count' | 'alpha' | 'key'>('key');
+
   useEffect(() => {
     BungieData.populate()
       .catch(console.error);
@@ -86,9 +92,10 @@ export const ShowCase = observer(function ShowCase() {
     setBreakdown(BungieData.weaponBreakdownBy(
       BungieData.weaponInventoryMap,
       breakdownList[0].map(i => breakdowns[i]),
+      sortBy
     ));
 
-  }, [BungieData.weaponInventoryMap, breakdownList]);
+  }, [BungieData.weaponInventoryMap, breakdownList, sortBy]);
 
 
   return (
@@ -112,17 +119,18 @@ export const ShowCase = observer(function ShowCase() {
           <Paper className={classes.settings} elevation={2}>
 
             <Typography variant="h4">D2 Weapons breakdown</Typography>
-<hr/>
+            <hr/>
 
             <Typography variant="h5">Breakdown criteria</Typography>
-            <Typography variant="body1">You can drag criteria to re-order them and also to exclude them from the list</Typography>
+            <Typography variant="body1">You can drag criteria to re-order them and also to exclude them from the
+              list</Typography>
 
             <div className={classes.spacer}/>
             <ReOrderableListGroup
               name='uniqueGroupName'
               group={breakdownList}
               onListGroupUpdate={(newList: WeaponBreakdownList['dim'][][]) => {
-                if(newList[0].length === 0) return;
+                if (newList[0].length === 0) return;
                 setBreakdownList(newList);
               }}
             >
@@ -133,7 +141,7 @@ export const ShowCase = observer(function ShowCase() {
                 {breakdownList[0].map((i, idx) => (
                   <ReOrderableItem key={i}>
                     <Typography className={classes.breakdownListItem} variant="h6">
-                      {idx+1}. {breakdownNames[i]}
+                      {idx + 1}. {breakdownNames[i]}
                     </Typography>
                   </ReOrderableItem>
                 ))}
@@ -151,6 +159,30 @@ export const ShowCase = observer(function ShowCase() {
                 ))}
               </ReOrderableList>
             </ReOrderableListGroup>
+
+            <hr/>
+
+            <Typography variant="h5">Sorting</Typography>
+            <Typography variant="body1">Select how you want to sort your items</Typography>
+
+            <div className={classes.spacer}/>
+            <Select
+              value={sortBy}
+            className={classes.sort}
+              onChange={e => setSortBy(e.target.value as 'count' | 'alpha' | 'key')}
+            variant="outlined"
+              title="Select how you want to sort the items"
+            >
+              <MenuItem value="count">
+                Number of Item
+              </MenuItem>
+              <MenuItem value="alpha">
+                Name
+              </MenuItem>
+              <MenuItem value="key">
+                ID - How Bungie sorts stuff
+              </MenuItem>
+            </Select>
 
           </Paper>
           {BungieData.weaponInventoryMap && breakdown && (

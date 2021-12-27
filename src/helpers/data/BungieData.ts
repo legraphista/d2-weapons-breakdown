@@ -110,7 +110,11 @@ export class BungieDataClass {
   }
 
 
-  weaponBreakdownBy(map: BungieDataClass['weaponInventoryMap'], breakdownList: WeaponBreakdownList[]): WeaponBreakdownByReturnType[] | null {
+  weaponBreakdownBy(
+    map: BungieDataClass['weaponInventoryMap'],
+    breakdownList: WeaponBreakdownList[],
+    sortBy: 'count' | 'alpha' | 'key'
+  ): WeaponBreakdownByReturnType[] | null {
 
     if (!map) return null;
 
@@ -118,7 +122,7 @@ export class BungieDataClass {
 
     const keys = [...map.dimensions[first.dim].map.keys()] as number[];
 
-    return keys
+    const data = keys
       .map(key => {
         const subset = map.getSubset({
           [first.dim]: {
@@ -128,17 +132,29 @@ export class BungieDataClass {
 
         return ({
           key,
+          name: first.name(key),
           subset,
           title: first.title(key, subset),
           children: breakdownList.length > 1 ? this.weaponBreakdownBy(
             subset,
-            breakdownList.slice(1)
+            breakdownList.slice(1),
+            sortBy
           ) : null
         })
 
-      })
-      .sort((a, b) => b.subset.length - a.subset.length);
+      });
 
+    if (sortBy === 'count') {
+      data.sort((a, b) => b.subset.length - a.subset.length);
+    }
+    if (sortBy === 'key') {
+      data.sort((a, b) => a.key.toString().localeCompare(b.key.toString()));
+    }
+    if (sortBy === 'alpha') {
+      data.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    
+    return data;
   }
 
 }
@@ -146,12 +162,14 @@ export class BungieDataClass {
 
 export type WeaponBreakdownByReturnType = {
   key: number,
+  name: string,
   title: React.ReactNode,
   subset: Exclude<BungieDataClass['weaponInventoryMap'], null>,
   children: WeaponBreakdownByReturnType[] | null
 }
 export type WeaponBreakdownList = {
   dim: ('inventoryBucketHash' | 'damageTypeHash' | 'itemSubType' | 'intrinsicsHash'),
+  name: (dimValue: any) => string,
   title: (dimValue: any, subset: Exclude<BungieDataClass['weaponInventoryMap'], null>) => React.ReactNode,
 }
 

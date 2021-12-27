@@ -131,7 +131,10 @@ export function CollapsibleTitle(
 function CopyDIMQueryButton({itemsIds}: { itemsIds: string[] }) {
   return (
     <Button
-      onClick={() => {
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         const ids = itemsIds.map(x => `id:${x}`);
 
         navigator.clipboard.writeText(ids.join(' or ')).catch(console.error);
