@@ -54,7 +54,7 @@
   background: rgba(255, 255, 255, 0.075);
 
   &:empty::before {
-    content: 'You can drag criteria item here too';
+    content: 'You can drag criteria items here to disable';
     color: #ababab;
   }
 }

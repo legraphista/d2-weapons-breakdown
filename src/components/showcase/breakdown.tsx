@@ -142,7 +142,11 @@ function CopyDIMQueryButton({itemsIds}: { itemsIds: string[] }) {
 
         const ids = itemsIds.map(x => `id:${x}`);
 
-        navigator.clipboard.writeText(ids.join(' or ')).catch(e => {
+        navigator.clipboard.writeText(ids.join(' or '))
+          .then(() => {
+            enqueueSnackbar('Successfully copied to clipboard', {variant: 'info'});
+          })
+          .catch(e => {
           enqueueSnackbar('Oops, something went wrong', {variant: 'error'});
           enqueueSnackbar(e.message, {variant: 'error'});
           console.error(e);
