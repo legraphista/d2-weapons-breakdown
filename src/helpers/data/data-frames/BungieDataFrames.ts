@@ -1,15 +1,13 @@
 import {DataFrame, DataFrameOptions} from "./index";
 import {
   BungieMembershipType,
-  DestinyComponentType, DestinyItemCategoryDefinition, DestinyItemSubType,
+  DestinyComponentType,
+  DestinyItemCategoryDefinition,
+  DestinyItemSubType,
   DestinyItemType,
   DestinyManifest,
-  DestinyPublicVendorsResponse,
-  DestinyVendorsResponse,
   getDestinyManifestSlice,
-  getProfile,
-  getPublicVendors,
-  getVendors
+  getProfile
 } from "bungie-api-ts/destiny2";
 import {BungieRequests} from "../../comms";
 import {AllDestinyManifestComponents} from "bungie-api-ts/destiny2/manifest";

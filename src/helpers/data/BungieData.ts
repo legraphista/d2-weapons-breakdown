@@ -78,7 +78,6 @@ export class BungieDataClass {
         perks: itemComponents.perks.data![inventoryItem.itemInstanceId!].perks,
         stats: itemComponents.stats.data![inventoryItem.itemInstanceId!].stats,
         talentGrids: itemComponents.talentGrids.data![inventoryItem.itemInstanceId!],
-        // reusablePlugs: itemComponents.reusablePlugs.data![inventoryItem.itemInstanceId!].plugs,
       }))
       .map(x => ({
         ...x,

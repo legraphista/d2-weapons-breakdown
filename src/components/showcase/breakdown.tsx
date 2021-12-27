@@ -7,6 +7,7 @@ import {BungieIcon} from "../atoms/BungieIcon/BungieIcon";
 import {Button, Tooltip} from "@mui/material";
 import {DestinyDisplayPropertiesDefinition} from "bungie-api-ts/destiny2";
 import React from "react";
+import {useSnackbar} from "notistack";
 
 export const Breakdown = observer(
   function Breakdown(
@@ -66,6 +67,7 @@ export const Entries = observer(function Entires({items}: { items: Exclude<Bungi
           />
 
           <div className={classes.title}>
+            {i.instance.primaryStat.value}{' '}
             {i.item.displayProperties.name}
           </div>
 
@@ -105,6 +107,7 @@ export function CollapsibleTitle(
     items: Exclude<BungieDataClass['weaponInventoryMap'], null>
   }
 ) {
+
   return (
     <div className={classes.title}>
       <BungieIcon
@@ -129,6 +132,8 @@ export function CollapsibleTitle(
 }
 
 function CopyDIMQueryButton({itemsIds}: { itemsIds: string[] }) {
+  const {enqueueSnackbar} = useSnackbar();
+
   return (
     <Button
       onClick={(e) => {
@@ -137,7 +142,11 @@ function CopyDIMQueryButton({itemsIds}: { itemsIds: string[] }) {
 
         const ids = itemsIds.map(x => `id:${x}`);
 
-        navigator.clipboard.writeText(ids.join(' or ')).catch(console.error);
+        navigator.clipboard.writeText(ids.join(' or ')).catch(e => {
+          enqueueSnackbar('Oops, something went wrong', {variant: 'error'});
+          enqueueSnackbar(e.message, {variant: 'error'});
+          console.error(e);
+        });
       }}
       variant="outlined"
     >
