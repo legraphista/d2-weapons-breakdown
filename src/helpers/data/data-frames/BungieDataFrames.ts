@@ -1,7 +1,8 @@
 import {DataFrame, DataFrameOptions} from "./index";
 import {
   BungieMembershipType,
-  DestinyComponentType,
+  DestinyComponentType, DestinyItemCategoryDefinition, DestinyItemSubType,
+  DestinyItemType,
   DestinyManifest,
   DestinyPublicVendorsResponse,
   DestinyVendorsResponse,
@@ -16,7 +17,7 @@ import {getMembershipDataForCurrentUser, UserMembershipData} from "bungie-api-ts
 import {ServerResponse} from "bungie-api-ts/common";
 import {computed} from "mobx";
 import {DestinyProfileResponse} from "bungie-api-ts/destiny2/interfaces";
-import {assertTrue} from "../../index";
+import {assertTrue, objectValues} from "../../index";
 
 export class DestinyManifestFrame extends DataFrame<DestinyManifest> {
 
@@ -38,6 +39,8 @@ export class DestinyDataFrame extends DataFrame<Pick<AllDestinyManifestComponent
   'DestinyInventoryBucketDefinition' |
   'DestinyInventoryItemDefinition' |
   'DestinyItemCategoryDefinition' |
+  'DestinySandboxPerkDefinition' |
+  'DestinyDamageTypeDefinition'|
   'DestinyVendorDefinition' |
   'DestinyGenderDefinition' |
   'DestinyClassDefinition' |
@@ -52,13 +55,26 @@ export class DestinyDataFrame extends DataFrame<Pick<AllDestinyManifestComponent
         'DestinyInventoryBucketDefinition',
         'DestinyInventoryItemDefinition',
         'DestinyItemCategoryDefinition',
+        'DestinySandboxPerkDefinition',
+        'DestinyDamageTypeDefinition',
         'DestinyVendorDefinition',
         'DestinyGenderDefinition',
         'DestinyClassDefinition',
         'DestinyRaceDefinition',
-        'DestinyStatDefinition',
+        'DestinyStatDefinition'
       ]
     });
+  }
+
+  @computed get weaponSubTypes() {
+    if(!this.data) return null;
+
+    const weapons = objectValues(this.data.DestinyItemCategoryDefinition).filter(x => x.grantDestinyItemType===DestinyItemType.None)
+
+    return weapons.reduce((a, c) => {
+      a[c.grantDestinySubType] = c;
+      return a;
+    }, {} as {[s in DestinyItemSubType]: DestinyItemCategoryDefinition })
   }
 
 }
@@ -122,6 +138,7 @@ export class CharactersDataFrame extends DataFrame<DestinyProfileResponse> {
         DestinyComponentType.Characters,
         DestinyComponentType.CurrencyLookups,
         DestinyComponentType.ProfileInventories,
+        DestinyComponentType.CharacterInventories,
         DestinyComponentType.ItemInstances,
         DestinyComponentType.ItemPerks,
         DestinyComponentType.ItemStats,
@@ -132,54 +149,3 @@ export class CharactersDataFrame extends DataFrame<DestinyProfileResponse> {
     }).then(serverResponseToData);
   }
 }
-
-
-export class VendorsDataFrame extends DataFrame<DestinyVendorsResponse> {
-
-  readonly characterId: string;
-  readonly membershipType: BungieMembershipType;
-  readonly membershipId: string
-
-  constructor(characterId: string, membershipType: BungieMembershipType, membershipId: string, options?: DataFrameOptions) {
-    super(options);
-    this.characterId = characterId;
-    this.membershipType = membershipType;
-    this.membershipId = membershipId;
-  }
-
-  protected async fetch() {
-
-    const { membershipType, membershipId, characterId } = this;
-
-    return await getVendors(BungieRequests.userReq, {
-      characterId,
-      membershipType,
-      destinyMembershipId: membershipId,
-      components: [
-        DestinyComponentType.Vendors,
-        DestinyComponentType.VendorSales,
-        DestinyComponentType.ItemInstances,
-        DestinyComponentType.ItemStats,
-      ]
-    }).then(serverResponseToData);
-  }
-}
-
-
-export class PublicVendorsDataFrame extends DataFrame<DestinyPublicVendorsResponse> {
-  protected async fetch() {
-    return await getPublicVendors(BungieRequests.userReq, {
-      components: [
-        DestinyComponentType.Vendors,
-        DestinyComponentType.VendorSales,
-        DestinyComponentType.ItemInstances,
-        DestinyComponentType.ItemStats,
-      ]
-    }).then(serverResponseToData);
-  }
-}
-
-export const publicVendors = new PublicVendorsDataFrame({ autoFetch: false });
-
-// @ts-ignore
-window.publicVendors = publicVendors;
