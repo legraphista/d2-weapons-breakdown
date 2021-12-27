@@ -144,13 +144,13 @@ export class BungieDataClass {
 }
 
 
-type WeaponBreakdownByReturnType = {
+export type WeaponBreakdownByReturnType = {
   key: number,
   title: React.ReactNode,
   subset: Exclude<BungieDataClass['weaponInventoryMap'], null>,
   children: WeaponBreakdownByReturnType[] | null
 }
-type WeaponBreakdownList = {
+export type WeaponBreakdownList = {
   dim: ('inventoryBucketHash' | 'damageTypeHash' | 'itemSubType' | 'intrinsicsHash'),
   title: (dimValue: any, subset: Exclude<BungieDataClass['weaponInventoryMap'], null>) => React.ReactNode,
 }

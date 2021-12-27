@@ -21,6 +21,7 @@ export const Auth = observer(function Auth() {
     const state = url.searchParams.get('state');
 
     if (code && state) {
+      setLoading(true);
       finishAuthProcess(code, state)
         .then((data) => {
           BungieRequests.setUserAuth(data);
@@ -55,6 +56,10 @@ export const Auth = observer(function Auth() {
 
       {!loading && (
         <>
+          <Typography variant="h3">D2 Weapons breakdown</Typography>
+          <Typography variant="h6">Login to get a breakdown for all your weapons</Typography>
+          <Typography variant="h6">Helps you decide which to keep and which to dismantle</Typography>
+
           <Button
             className={classes.login}
             size="large"
@@ -66,41 +71,6 @@ export const Auth = observer(function Auth() {
           >
             Login
           </Button>
-
-          <div className={classes.qan}>
-            <section>
-              <Typography variant="h6">Q: Why do I need to login?</Typography>
-              <Typography variant="body1">
-                In Destiny 2, all the vendors inventory (except for Xûr) are tied to your character progression.<br/>
-                In order to get the Gear/Armor, we have to ask for all vendors data <br/>
-                even though the armor stock is the same for everyone.
-              </Typography>
-            </section>
-
-            <section>
-              <Typography variant="h6">Q: What data are you requesting?</Typography>
-              <Typography variant="body1">
-                We request data about your characters, <br/>
-                and then use that to request vendor items being sold.
-              </Typography>
-            </section>
-
-            <section>
-              <Typography variant="h6">Q: What data do you store?</Typography>
-              <Typography variant="body1">
-                <ul>
-                  <li>
-                    We <b>do</b> store you login token in your browser for the app to work, <br/>
-                    but it expires after an hour and you'll have to re-login.<br/>
-                  </li>
-                  <li>
-                    We <b>do not</b> save any data provided by the Bungie.net API.<br/>
-                    Our copy of your data is erased as soon as you close the browser tab.
-                  </li>
-                </ul>
-              </Typography>
-            </section>
-          </div>
         </>
       )}
 

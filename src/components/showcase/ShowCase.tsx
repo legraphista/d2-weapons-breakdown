@@ -1,21 +1,78 @@
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useState} from 'react'
 import {observer} from "mobx-react";
-import {BungieData, BungieDataClass} from "../../helpers/data/BungieData";
-import {Alert, AlertTitle, Button, Paper, Tooltip} from "@mui/material";
+import {BungieData, BungieDataClass, WeaponBreakdownList} from "../../helpers/data/BungieData";
+import {Alert, AlertTitle, Paper, Typography} from "@mui/material";
 import classes from './ShowCase.module.scss';
-import Collapsible from "react-collapsible";
 import {destinyData} from "../../helpers/data/data-frames/BungieDataFrames";
-import {DestinyDisplayPropertiesDefinition, DestinyItemSubType} from "bungie-api-ts/destiny2";
-import {BungieIcon} from "../atoms/BungieIcon/BungieIcon";
-import classNames from "classnames";
+import {DestinyItemSubType} from "bungie-api-ts/destiny2";
 import {Loading} from "../atoms/Loading/Loading";
+import {Breakdown, CollapsibleTitle} from "./breakdown";
+import 'react-reorderable-list/dist/index.css'
+
+const {
+  ReOrderableItem,
+  ReOrderableList,
+  ReOrderableListGroup
+} = require('react-reorderable-list')
+
+const breakdownNames: ({ [s in WeaponBreakdownList['dim']]: string }) = {
+  intrinsicsHash: 'Intrinsic Archetype',
+  itemSubType: 'Weapon Type',
+  damageTypeHash: 'Damage Type',
+  inventoryBucketHash: 'Inventory Slot'
+};
+
+const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) = {
+  inventoryBucketHash: {
+    dim: "inventoryBucketHash",
+    title: (dimValue, subset) => <CollapsibleTitle
+      displayProperties={BungieData.destiny?.DestinyInventoryBucketDefinition[dimValue].displayProperties}
+      items={subset}
+    />
+  },
+  damageTypeHash: {
+    dim: "damageTypeHash",
+    title: (dimValue, subset) => <CollapsibleTitle
+      displayProperties={BungieData.destiny?.DestinyDamageTypeDefinition[dimValue].displayProperties}
+      items={subset}
+    />
+  },
+  itemSubType: {
+    dim: "itemSubType",
+    title: (dimValue: DestinyItemSubType, subset) => <CollapsibleTitle
+      displayProperties={destinyData.weaponSubTypes?.[dimValue]?.displayProperties}
+      items={subset}
+    />
+  },
+  intrinsicsHash: {
+    dim: "intrinsicsHash",
+    title: (dimValue, subset) => <CollapsibleTitle
+      displayProperties={BungieData.destiny?.DestinyInventoryItemDefinition[dimValue].displayProperties}
+      items={subset}
+    />
+  }
+} as const;
+
 
 export const ShowCase = observer(function ShowCase() {
 
   const error = BungieData.error;
   const loading = BungieData.fetching;
 
-  const breakdownRef = useRef<ReturnType<BungieDataClass['weaponBreakdownBy']>>(null);
+  const [breakdown, setBreakdown] = useState<ReturnType<BungieDataClass['weaponBreakdownBy']>>(null);
+
+  const [breakdownList, setBreakdownList] = useState<WeaponBreakdownList['dim'][][]>([
+    [
+      // used
+      'inventoryBucketHash',
+      'damageTypeHash',
+      'itemSubType',
+      'intrinsicsHash'
+    ],
+    [
+      // unused
+    ]
+  ]);
 
   useEffect(() => {
     BungieData.populate()
@@ -24,39 +81,14 @@ export const ShowCase = observer(function ShowCase() {
 
   useEffect(() => {
 
-    if (!BungieData.weaponInventory) breakdownRef.current = null;
+    if (!BungieData.weaponInventoryMap) setBreakdown(null);
 
-    breakdownRef.current = BungieData.weaponBreakdownBy(
+    setBreakdown(BungieData.weaponBreakdownBy(
       BungieData.weaponInventoryMap,
-      [
-        {
-          dim: "inventoryBucketHash",
-          title: (dimValue, subset) => <CollapsibleTitle
-            displayProperties={BungieData.destiny?.DestinyInventoryBucketDefinition[dimValue].displayProperties}
-            items={subset}
-          />
-        }, {
-        dim: "damageTypeHash",
-        title: (dimValue, subset) => <CollapsibleTitle
-          displayProperties={BungieData.destiny?.DestinyDamageTypeDefinition[dimValue].displayProperties}
-          items={subset}
-        />
-      }, {
-        dim: "itemSubType",
-        title: (dimValue: DestinyItemSubType, subset) => <CollapsibleTitle
-          displayProperties={destinyData.weaponSubTypes?.[dimValue]?.displayProperties}
-          items={subset}
-        />
-      }, {
-        dim: "intrinsicsHash",
-        title: (dimValue, subset) => <CollapsibleTitle
-          displayProperties={BungieData.destiny?.DestinyInventoryItemDefinition[dimValue].displayProperties}
-          items={subset}
-        />
-      }]
-    );
+      breakdownList[0].map(i => breakdowns[i]),
+    ));
 
-  }, [BungieData.weaponInventoryMap]);
+  }, [BungieData.weaponInventoryMap, breakdownList]);
 
 
   return (
@@ -75,145 +107,60 @@ export const ShowCase = observer(function ShowCase() {
         </div>
       )}
 
-      {BungieData.weaponInventoryMap && breakdownRef.current && (
-        <div className={classes.list}>
-          <Breakdown items={breakdownRef.current}/>
+      {!loading && (
+        <div className={classes.container}>
+          <Paper className={classes.settings} elevation={2}>
+
+            <Typography variant="h4">D2 Weapons breakdown</Typography>
+<hr/>
+
+            <Typography variant="h5">Breakdown criteria</Typography>
+            <Typography variant="body1">You can drag criteria to re-order them and also to exclude them from the list</Typography>
+
+            <div className={classes.spacer}/>
+            <ReOrderableListGroup
+              name='uniqueGroupName'
+              group={breakdownList}
+              onListGroupUpdate={(newList: WeaponBreakdownList['dim'][][]) => {
+                if(newList[0].length === 0) return;
+                setBreakdownList(newList);
+              }}
+            >
+
+              <Typography variant="h5">Included</Typography>
+
+              <ReOrderableList className={classes.breakdownList} style={{width: '100%', border: '1px solid white'}}>
+                {breakdownList[0].map((i, idx) => (
+                  <ReOrderableItem key={i}>
+                    <Typography className={classes.breakdownListItem} variant="h6">
+                      {idx+1}. {breakdownNames[i]}
+                    </Typography>
+                  </ReOrderableItem>
+                ))}
+              </ReOrderableList>
+
+              <Typography variant="h5">Excluded</Typography>
+
+              <ReOrderableList className={classes.breakdownList}>
+                {breakdownList[1].map(i => (
+                  <ReOrderableItem key={i}>
+                    <Typography className={classes.breakdownListItem} variant="h6">
+                      {breakdownNames[i]}
+                    </Typography>
+                  </ReOrderableItem>
+                ))}
+              </ReOrderableList>
+            </ReOrderableListGroup>
+
+          </Paper>
+          {BungieData.weaponInventoryMap && breakdown && (
+            <div className={classes.list}>
+              <Breakdown items={breakdown}/>
+            </div>
+          )}
         </div>
       )}
 
     </Paper>
   )
 });
-
-export const Breakdown = observer(
-  function Breakdown(
-    {
-      items
-    }: {
-      items: Exclude<ReturnType<BungieDataClass['weaponBreakdownBy']>, null>
-    }
-  ) {
-
-
-    return (
-      <>
-        {
-          items.map(item => {
-
-            return <div key={item.key}>
-              <Collapsible
-                className={classes.collapsible}
-                triggerClassName={classes.header}
-                openedClassName={classes.collapsible}
-                triggerOpenedClassName={classNames(classes.header, classes.opened)}
-                contentOuterClassName={classes.content}
-                contentInnerClassName={classes.inner}
-                trigger={<>{item.title}</>}
-              >
-
-                {
-                  item.children ?
-                    <Breakdown items={item.children}/> :
-                    <Entries items={item.subset.entries}/>
-                }
-
-              </Collapsible>
-            </div>
-          })
-        }
-      </>
-    );
-
-  }
-);
-
-export const Entries = observer(function Entires({items}: { items: Exclude<BungieDataClass['weaponInventory'], null> }) {
-
-  return <div className={classes.entries}>
-    {items.map(i => {
-      return (
-        <div className={classes.entry} key={i.inventoryItem.itemInstanceId}>
-          <BungieIcon
-            key={i.inventoryItem.itemInstanceId}
-            displayProperties={i.item.displayProperties}
-            className={classes.icon}
-            size="inherit"
-          />
-
-          <div className={classes.title}>
-            {i.item.displayProperties.name}
-          </div>
-
-          <div className={classes.perks}>
-            {
-              i.perks
-                .filter(p => p.visible)
-                .map(p => BungieData.destiny?.DestinySandboxPerkDefinition[p.perkHash])
-                .filter(x => !!x)
-                .map(p =>
-                  <Tooltip title={p!.displayProperties.name} key={p!.hash}>
-                    <div>
-                      <BungieIcon displayProperties={p!.displayProperties}
-                                  size="inherit"
-                                  className={classes.icon}
-                      />
-                    </div>
-                  </Tooltip>
-                )
-            }
-          </div>
-
-          <CopyDIMQueryButton itemsIds={[i.inventoryItem.itemInstanceId!]}/>
-        </div>
-      )
-    })}
-  </div>
-
-});
-
-export function CollapsibleTitle(
-  {
-    displayProperties,
-    items,
-  }: {
-    displayProperties?: DestinyDisplayPropertiesDefinition
-    items: Exclude<BungieDataClass['weaponInventoryMap'], null>
-  }
-) {
-  return (
-    <div className={classes.title}>
-      <BungieIcon
-        size="inherit"
-        className={classes.icon}
-        displayProperties={displayProperties || ({} as DestinyDisplayPropertiesDefinition)}
-      />
-
-      <div className={classes.name}>
-        {displayProperties?.name ?? '...'.toString()}
-      </div>
-      <div className={classes.count}>
-        {items.length} item{items.length !== 1 ? 's' : ''}
-      </div>
-
-      <CopyDIMQueryButton
-        itemsIds={items.entries.map(x => x.inventoryItem.itemInstanceId!)}
-      />
-
-    </div>
-  )
-}
-
-function CopyDIMQueryButton({itemsIds}: { itemsIds: string[] }) {
-  return (
-    <Button
-      onClick={() => {
-        const ids = itemsIds.map(x => `id:${x}`);
-
-        navigator.clipboard.writeText(ids.join(' or ')).catch(console.error);
-      }}
-      variant="outlined"
-    >
-      Copy DIM Query to clipboard
-    </Button>
-  )
-}
