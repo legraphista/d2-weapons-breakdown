@@ -83,6 +83,7 @@ export const ShowCase = observer(function ShowCase() {
   const [sortBy, setSortBy]  =useState<'count' | 'alpha' | 'key'>('key');
 
   useEffect(() => {
+    enqueueSnackbar('Loading your inventory', {variant: 'info'});
     BungieData.populate()
       .then(() => {
         enqueueSnackbar('Finished looking in your inventory', {variant: 'info'});
