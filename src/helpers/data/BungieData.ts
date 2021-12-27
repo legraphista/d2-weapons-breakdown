@@ -92,13 +92,11 @@ export class BungieDataClass {
         inventoryBucketHash: x.inventoryBucket.hash
       }))
       .sort((a, b) => {
-        if (a.item.displayProperties.name < b.item.displayProperties.name) {
-          return -1
-        }
-        if (a.item.displayProperties.name > b.item.displayProperties.name) {
-          return +1
-        }
-        return +0;
+        const nameSort = a.item.displayProperties.name.localeCompare(b.item.displayProperties.name);
+
+        if (nameSort !== 0) return nameSort;
+
+        return b.instance.primaryStat.value - a.instance.primaryStat.value;
       })
   }
 
