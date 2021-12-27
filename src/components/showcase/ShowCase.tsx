@@ -1,7 +1,17 @@
 import React, {useEffect, useState} from 'react'
 import {observer} from "mobx-react";
 import {BungieData, BungieDataClass, WeaponBreakdownList} from "../../helpers/data/BungieData";
-import {Alert, AlertTitle, MenuItem, Paper, Select, Typography} from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  Checkbox,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Typography
+} from "@mui/material";
 import classes from './ShowCase.module.scss';
 import {destinyData} from "../../helpers/data/data-frames/BungieDataFrames";
 import {DestinyItemSubType} from "bungie-api-ts/destiny2";
@@ -9,6 +19,7 @@ import {Loading} from "../atoms/Loading/Loading";
 import {Breakdown, CollapsibleTitle} from "./breakdown";
 import 'react-reorderable-list/dist/index.css'
 import {useSnackbar} from "notistack";
+import {action} from "mobx";
 
 const {
   ReOrderableItem,
@@ -193,6 +204,20 @@ export const ShowCase = observer(function ShowCase() {
                 ID - How Bungie sorts stuff
               </MenuItem>
             </Select>
+
+            <hr/>
+
+            <Typography variant="h5">Extra</Typography>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  value={BungieData.excludeExotics}
+                  onChange={action(e => BungieData.excludeExotics = e.target.checked)}
+                />
+              }
+              label="Exclude Exotics"
+            />
 
           </Paper>
           {BungieData.weaponInventoryMap && breakdown && (

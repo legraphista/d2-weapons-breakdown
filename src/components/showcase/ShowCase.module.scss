@@ -52,12 +52,19 @@
   min-height: 32px;
   border: 1px solid white;
   background: rgba(255, 255, 255, 0.075);
+
+  &:empty::before {
+    content: 'You can drag criteria item here too';
+    color: #ababab;
+  }
 }
+
 :global(.ui-reorderable-item) {
   font-size: 1.5em;
   width: 100%;
   cursor: move;
   color: white;
+  user-select: none;
 }
 
 .loading {

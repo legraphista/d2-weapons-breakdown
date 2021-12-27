@@ -2,15 +2,9 @@ import {computed, flow, makeObservable, observable} from "mobx";
 import {CharactersDataFrame, destinyData, destinyManifest, MembershipDataFrame} from "./data-frames/BungieDataFrames";
 import {assertExists, assertTrue, objectValues} from "../index";
 import {BungieRequests} from "../comms";
-import {DestinyItemComponent, DestinyItemType} from "bungie-api-ts/destiny2";
+import {DestinyItemComponent, DestinyItemType, TierType} from "bungie-api-ts/destiny2";
 import {MultidimensionalMap} from "multidimensional-map";
 import type React from "react";
-
-export const InventoryBucketHashes = {
-  kinetic: 1498876634,
-  energy: 2465295065,
-  power: 953998645
-}
 
 export class BungieDataClass {
 
@@ -49,6 +43,8 @@ export class BungieDataClass {
     yield destinyData.populate();
   })
 
+  @observable excludeExotics = false;
+
   @computed get weaponInventory() {
     if (!this.characters?.data || !this.destiny) return null;
 
@@ -66,7 +62,15 @@ export class BungieDataClass {
     assertExists(inventoryItems, 'Cannot get inventory items');
 
     return inventoryItems
-      .filter(x => DestinyInventoryItemDefinition[x.itemHash]?.itemType === DestinyItemType.Weapon)
+      .filter(x => {
+        const defs = DestinyInventoryItemDefinition[x.itemHash];
+
+        if (this.excludeExotics && defs?.inventory?.tierType === TierType.Exotic) {
+          return false;
+        }
+
+        return defs?.itemType === DestinyItemType.Weapon;
+      })
       .map(inventoryItem => ({
         inventoryItem,
         item: DestinyInventoryItemDefinition[inventoryItem.itemHash],
