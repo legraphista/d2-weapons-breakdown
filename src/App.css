@@ -1,0 +1,6 @@
+/* Desitny font is Futura, Jost is the closes free one https://learnui.design/blog/futura-similar-fonts.html */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap');
+
+* {
+  font-family: 'Jost', sans-serif;
+}

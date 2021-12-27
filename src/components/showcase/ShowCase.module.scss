@@ -1,0 +1,60 @@
+.root {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  flex-flow: column;
+  justify-content: start;
+  align-items: center;
+
+}
+
+.restrictedWidth {
+  max-width: 1800px;
+}
+
+
+.dataGrid {
+  margin-top: 24px;
+  width: 100%;
+  overflow: auto;
+}
+
+.loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+
+  > * {
+    margin-top: 8px !important;
+  }
+}
+
+.tabs {
+  z-index: 2;
+  flex-shrink: 0;
+
+  & button {
+    text-shadow: 0 0 5px black,
+    0 0 5px black,
+    0 0 5px black,
+    0 0 5px black;
+
+    & > svg, & > img, & > div {
+      filter: drop-shadow(0px 0px 2px #1e1e1e);
+    }
+  }
+
+}
+
+.error {
+  width: 100%;
+  margin: 0 auto;
+}

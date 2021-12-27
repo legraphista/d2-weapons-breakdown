@@ -1,0 +1,40 @@
+.root {
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+
+  & .login {
+    font-size: 16pt;
+    padding: 24px 38px;
+    font-weight: bold;
+  }
+
+  & .error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  & .qan {
+    margin-top: 16px;
+
+    section {
+      margin: 8px 0;
+
+      ul {
+        margin: 0;
+        padding-inline-start: 12px;
+      }
+
+      & > *:nth-child(2) {
+        padding-left: 28px;
+      }
+    }
+  }
+}
+
