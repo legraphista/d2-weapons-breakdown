@@ -28,6 +28,7 @@
     "mobx-react": "^7.2.0",
     "multidimensional-map": "^1.2.0",
     "node-sass": "^6.0.1",
+    "notistack": "^2.0.3",
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.8",
     "react-collapsible": "^2.8.4",

@@ -8,6 +8,7 @@ import {DestinyItemSubType} from "bungie-api-ts/destiny2";
 import {Loading} from "../atoms/Loading/Loading";
 import {Breakdown, CollapsibleTitle} from "./breakdown";
 import 'react-reorderable-list/dist/index.css'
+import {useSnackbar} from "notistack";
 
 const {
   ReOrderableItem,
@@ -62,6 +63,7 @@ export const ShowCase = observer(function ShowCase() {
 
   const error = BungieData.error;
   const loading = BungieData.fetching;
+  const {enqueueSnackbar} = useSnackbar();
 
   const [breakdown, setBreakdown] = useState<ReturnType<BungieDataClass['weaponBreakdownBy']>>(null);
 
@@ -82,7 +84,14 @@ export const ShowCase = observer(function ShowCase() {
 
   useEffect(() => {
     BungieData.populate()
-      .catch(console.error);
+      .then(() => {
+        enqueueSnackbar('Finished looking in your inventory', {variant: 'info'});
+      })
+      .catch(e => {
+        console.error(e);
+        enqueueSnackbar('Oops, something went wrong', {variant: 'error'});
+        enqueueSnackbar(e.message, {variant: 'error'});
+      });
   }, []);
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import {Auth} from "./components/auth/Auth";
 import {ShowCase} from "./components/showcase/ShowCase";
 import {ThemeProvider} from '@mui/material/styles';
 import {theme} from "./helpers/theme";
+import {SnackbarProvider} from "notistack";
 
 function App() {
 
@@ -19,19 +20,21 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
+    <SnackbarProvider maxSnack={5}>
+      <ThemeProvider theme={theme}>
+        <Router>
 
-        <Switch>
-          <Route exact path="/">
-            <ShowCase/>
-          </Route>
-          <Route path="/login">
-            <Auth/>
-          </Route>
-        </Switch>
-      </Router>
-    </ThemeProvider>
+          <Switch>
+            <Route exact path="/">
+              <ShowCase/>
+            </Route>
+            <Route path="/login">
+              <Auth/>
+            </Route>
+          </Switch>
+        </Router>
+      </ThemeProvider>
+    </SnackbarProvider>
   );
 }
 

@@ -153,7 +153,7 @@ export class BungieDataClass {
     if (sortBy === 'alpha') {
       data.sort((a, b) => a.name.localeCompare(b.name));
     }
-    
+
     return data;
   }
 
