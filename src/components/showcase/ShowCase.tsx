@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import {observer} from "mobx-react";
 import {BungieData, BungieDataClass, WeaponBreakdownList} from "../../helpers/data/BungieData";
 import {
@@ -6,7 +6,7 @@ import {
   AlertTitle,
   Checkbox,
   FormControlLabel,
-  InputLabel,
+  IconButton,
   MenuItem,
   Paper,
   Select,
@@ -20,6 +20,8 @@ import {Breakdown, CollapsibleTitle} from "./breakdown";
 import 'react-reorderable-list/dist/index.css'
 import {useSnackbar} from "notistack";
 import {action} from "mobx";
+import Twitter from "@mui/icons-material/Twitter";
+import Cached from "@mui/icons-material/Cached";
 
 const {
   ReOrderableItem,
@@ -53,7 +55,7 @@ const breakdowns: ({ [s in WeaponBreakdownList['dim']]: WeaponBreakdownList }) =
   },
   itemSubType: {
     dim: "itemSubType",
-    name: (dimValue:DestinyItemSubType) => destinyData.weaponSubTypes?.[dimValue]?.displayProperties.name ?? 'itemSubType',
+    name: (dimValue: DestinyItemSubType) => destinyData.weaponSubTypes?.[dimValue]?.displayProperties.name ?? 'itemSubType',
     title: (dimValue: DestinyItemSubType, subset) => <CollapsibleTitle
       displayProperties={destinyData.weaponSubTypes?.[dimValue]?.displayProperties}
       items={subset}
@@ -91,9 +93,9 @@ export const ShowCase = observer(function ShowCase() {
     ]
   ]);
 
-  const [sortBy, setSortBy]  =useState<'count' | 'alpha' | 'key'>('key');
+  const [sortBy, setSortBy] = useState<'count' | 'alpha' | 'key'>('key');
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     enqueueSnackbar('Loading your inventory', {variant: 'info'});
     BungieData.populate()
       .then(() => {
@@ -104,7 +106,9 @@ export const ShowCase = observer(function ShowCase() {
         enqueueSnackbar('Oops, something went wrong', {variant: 'error'});
         enqueueSnackbar(e.message, {variant: 'error'});
       });
-  }, []);
+  }, [enqueueSnackbar]);
+
+  useEffect(reload, [reload]);
 
   useEffect(() => {
 
@@ -129,114 +133,125 @@ export const ShowCase = observer(function ShowCase() {
         </Alert>
       )}
 
-      {loading && (
-        <div className={classes.loading}>
-          <Loading/>
-        </div>
-      )}
 
-      {!loading && (
-        <div className={classes.container}>
-          <Paper className={classes.settings} elevation={2}>
+      <div className={classes.container}>
+        <Paper className={classes.settings} elevation={2}>
 
-            <Typography variant="h4">D2 Weapons breakdown</Typography>
-            <hr/>
+          <Typography variant="h4">D2 Weapons breakdown</Typography>
 
-            <Typography variant="h5">Breakdown criteria</Typography>
-            <Typography variant="body1">You can drag criteria to re-order them and also to exclude them from the
-              list</Typography>
+          <IconButton onClick={reload} disabled={loading} className={classes.reload}>
+            <Cached/>
+          </IconButton>
+          <hr/>
 
-            <div className={classes.spacer}/>
-            <ReOrderableListGroup
-              name='uniqueGroupName'
-              group={breakdownList}
-              onListGroupUpdate={(newList: WeaponBreakdownList['dim'][][]) => {
-                if (newList[0].length === 0) return;
-                setBreakdownList(newList);
-              }}
-            >
+          <Typography variant="h5">Breakdown criteria</Typography>
+          <Typography variant="body1">You can drag criteria to re-order them and also to exclude them from the
+            list</Typography>
 
-              <Typography variant="h5">Included</Typography>
+          <div className={classes.spacer}/>
+          <ReOrderableListGroup
+            name='uniqueGroupName'
+            group={breakdownList}
+            onListGroupUpdate={(newList: WeaponBreakdownList['dim'][][]) => {
+              if (newList[0].length === 0) return;
+              setBreakdownList(newList);
+            }}
+          >
 
-              <ReOrderableList className={classes.breakdownList} style={{width: '100%', border: '1px solid white'}}>
-                {breakdownList[0].map((i, idx) => (
-                  <ReOrderableItem key={i}>
-                    <Typography className={classes.breakdownListItem} variant="h6">
-                      {idx + 1}. {breakdownNames[i]}
-                    </Typography>
-                  </ReOrderableItem>
-                ))}
-              </ReOrderableList>
+            <Typography variant="h5">Included</Typography>
 
-              <Typography variant="h5">Excluded</Typography>
+            <ReOrderableList className={classes.breakdownList} style={{width: '100%', border: '1px solid white'}}>
+              {breakdownList[0].map((i, idx) => (
+                <ReOrderableItem key={i}>
+                  <Typography className={classes.breakdownListItem} variant="h6">
+                    {idx + 1}. {breakdownNames[i]}
+                  </Typography>
+                </ReOrderableItem>
+              ))}
+            </ReOrderableList>
 
-              <ReOrderableList className={classes.breakdownList}>
-                {breakdownList[1].map(i => (
-                  <ReOrderableItem key={i}>
-                    <Typography className={classes.breakdownListItem} variant="h6">
-                      {breakdownNames[i]}
-                    </Typography>
-                  </ReOrderableItem>
-                ))}
-              </ReOrderableList>
-            </ReOrderableListGroup>
+            <Typography variant="h5">Excluded</Typography>
 
-            <hr/>
+            <ReOrderableList className={classes.breakdownList}>
+              {breakdownList[1].map(i => (
+                <ReOrderableItem key={i}>
+                  <Typography className={classes.breakdownListItem} variant="h6">
+                    {breakdownNames[i]}
+                  </Typography>
+                </ReOrderableItem>
+              ))}
+            </ReOrderableList>
+          </ReOrderableListGroup>
 
-            <Typography variant="h5">Sorting</Typography>
-            <Typography variant="body1">Select how you want to sort your items</Typography>
+          <hr/>
 
-            <div className={classes.spacer}/>
-            <Select
-              value={sortBy}
+          <Typography variant="h5">Sorting</Typography>
+          <Typography variant="body1">Select how you want to sort your items</Typography>
+
+          <div className={classes.spacer}/>
+          <Select
+            value={sortBy}
             className={classes.sort}
-              onChange={e => setSortBy(e.target.value as 'count' | 'alpha' | 'key')}
+            onChange={e => setSortBy(e.target.value as 'count' | 'alpha' | 'key')}
             variant="outlined"
-              title="Select how you want to sort the items"
-            >
-              <MenuItem value="count">
-                Number of Item
-              </MenuItem>
-              <MenuItem value="alpha">
-                Name
-              </MenuItem>
-              <MenuItem value="key">
-                ID - How Bungie sorts stuff
-              </MenuItem>
-            </Select>
+            title="Select how you want to sort the items"
+          >
+            <MenuItem value="count">
+              Number of Item
+            </MenuItem>
+            <MenuItem value="alpha">
+              Name
+            </MenuItem>
+            <MenuItem value="key">
+              ID - How Bungie sorts stuff
+            </MenuItem>
+          </Select>
 
-            <hr/>
+          <hr/>
 
-            <Typography variant="h5">Extra</Typography>
+          <Typography variant="h5">Toggles</Typography>
 
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value={BungieData.excludeExotics}
-                  onChange={action(e => BungieData.excludeExotics = e.target.checked)}
-                />
-              }
-              label="Exclude Exotics"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value={BungieData.showOnlyDuplicates}
-                  onChange={action(e => BungieData.showOnlyDuplicates = e.target.checked)}
-                />
-              }
-              label="Show only duplicates"
-            />
+          <FormControlLabel
+            control={
+              <Checkbox
+                value={BungieData.excludeExotics}
+                onChange={action(e => BungieData.excludeExotics = e.target.checked)}
+              />
+            }
+            label="Exclude Exotics"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                value={BungieData.showOnlyDuplicates}
+                onChange={action(e => BungieData.showOnlyDuplicates = e.target.checked)}
+              />
+            }
+            label="Show only duplicates"
+          />
 
-          </Paper>
 
-          {BungieData.weaponInventoryMap && breakdown && (
-            <div className={classes.list}>
-              <Breakdown items={breakdown}/>
-            </div>
-          )}
-        </div>
-      )}
+          <hr/>
+          <div className={classes.about}>
+            Have any ideas? Found bugs? <br/>
+            Find me on twitter <a href="https://twitter.com/legraphista">
+            @legraphista <Twitter fontSize="inherit"/>
+          </a>
+          </div>
+        </Paper>
+
+        {!loading && BungieData.weaponInventoryMap && breakdown && (
+          <div className={classes.list}>
+            <Breakdown items={breakdown}/>
+          </div>
+        )}
+
+        {loading && (
+          <div className={classes.loading}>
+            <Loading/>
+          </div>
+        )}
+      </div>
 
     </Paper>
   )

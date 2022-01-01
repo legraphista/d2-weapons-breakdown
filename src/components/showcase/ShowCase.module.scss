@@ -11,6 +11,8 @@
   justify-content: start;
   align-items: center;
 
+  a { color: white; }
+
   .container {
     display: flex;
     flex-flow: row;
@@ -24,6 +26,7 @@
       height: 100%;
       margin-right: 24px;
       overflow-y: auto;
+      position: relative;
 
       hr {
         margin-top: 24px;
@@ -37,6 +40,16 @@
       .sort {
         width: 100%;
         background: rgba(255, 255, 255, 0.075);
+      }
+
+      .reload {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+      }
+
+      .about {
+        margin-top: auto;
       }
     }
 

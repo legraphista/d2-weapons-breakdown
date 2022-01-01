@@ -20,7 +20,7 @@ function App() {
   }, []);
 
   return (
-    <SnackbarProvider maxSnack={5}>
+    <SnackbarProvider maxSnack={5} anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}>
       <ThemeProvider theme={theme}>
         <Router>
 

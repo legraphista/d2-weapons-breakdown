@@ -31,6 +31,8 @@ export class BungieDataClass {
   populate = flow(function* populate(this: BungieDataClass) {
     assertTrue(BungieRequests.isLoggedIn, 'You have to login first');
 
+    if (this.fetching) return;
+
     yield this.membership.populate();
 
     const {primaryMembershipId, primaryMembershipType} = this.membership;
@@ -41,7 +43,7 @@ export class BungieDataClass {
     yield this.characters.populate();
 
     yield destinyData.populate();
-  })
+  }.bind(this));
 
   @observable excludeExotics = false;
   @observable showOnlyDuplicates = true;
