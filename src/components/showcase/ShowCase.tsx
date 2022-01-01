@@ -218,8 +218,18 @@ export const ShowCase = observer(function ShowCase() {
               }
               label="Exclude Exotics"
             />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  value={BungieData.showOnlyDuplicates}
+                  onChange={action(e => BungieData.showOnlyDuplicates = e.target.checked)}
+                />
+              }
+              label="Show only duplicates"
+            />
 
           </Paper>
+
           {BungieData.weaponInventoryMap && breakdown && (
             <div className={classes.list}>
               <Breakdown items={breakdown}/>

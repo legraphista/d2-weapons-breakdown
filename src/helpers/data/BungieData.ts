@@ -44,6 +44,7 @@ export class BungieDataClass {
   })
 
   @observable excludeExotics = false;
+  @observable showOnlyDuplicates = true;
 
   @computed get weaponInventory() {
     if (!this.characters?.data || !this.destiny) return null;
@@ -61,7 +62,7 @@ export class BungieDataClass {
 
     assertExists(inventoryItems, 'Cannot get inventory items');
 
-    return inventoryItems
+    let data = inventoryItems
       .filter(x => {
         const defs = DestinyInventoryItemDefinition[x.itemHash];
 
@@ -97,7 +98,28 @@ export class BungieDataClass {
         if (nameSort !== 0) return nameSort;
 
         return b.instance.primaryStat.value - a.instance.primaryStat.value;
-      })
+      });
+
+    if (this.showOnlyDuplicates) {
+      const map = new Map<number, number>();
+
+      data.forEach(i => {
+        const hash = i.item.hash;
+
+        if (map.has(hash)) {
+          map.set(hash, map.get(hash)! + 1);
+        } else {
+          map.set(hash, 1);
+        }
+      });
+
+      data = data.filter(x => {
+        return (map.get(x.item.hash) || 0) > 1;
+      });
+    }
+
+
+    return data;
   }
 
   @computed get weaponInventoryMap() {
@@ -109,7 +131,6 @@ export class BungieDataClass {
       this.weaponInventory
     );
   }
-
 
   weaponBreakdownBy(
     map: BungieDataClass['weaponInventoryMap'],
