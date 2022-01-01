@@ -46,7 +46,7 @@ export class BungieDataClass {
   }.bind(this));
 
   @observable excludeExotics = false;
-  @observable showOnlyDuplicates = true;
+  @observable showOnlyDuplicates = false;
 
   @computed get weaponInventory() {
     if (!this.characters?.data || !this.destiny) return null;
@@ -67,10 +67,6 @@ export class BungieDataClass {
     let data = inventoryItems
       .filter(x => {
         const defs = DestinyInventoryItemDefinition[x.itemHash];
-
-        if (this.excludeExotics && defs?.inventory?.tierType === TierType.Exotic) {
-          return false;
-        }
 
         return defs?.itemType === DestinyItemType.Weapon;
       })
@@ -120,6 +116,9 @@ export class BungieDataClass {
       });
     }
 
+    if(this.excludeExotics) {
+      data = data.filter(x => DestinyInventoryItemDefinition[x.item.hash].inventory?.tierType !== TierType.Exotic)
+    }
 
     return data;
   }
