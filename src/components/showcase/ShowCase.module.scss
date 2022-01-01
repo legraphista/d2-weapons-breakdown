@@ -11,6 +11,10 @@
   justify-content: start;
   align-items: center;
 
+  * {
+   box-sizing: border-box;
+  }
+
   a { color: white; }
 
   .container {
